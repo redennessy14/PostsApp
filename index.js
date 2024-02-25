@@ -1,12 +1,16 @@
 import express from "express";
-import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-import { validationResult } from "express-validator";
-import { registerValidation } from "./validations/auth.js";
+import {
+  registerValidation,
+  loginValidation,
+} from "./validations/validations.js";
+import checkAuth from "./utils/checkAuth.js";
+
+import * as UserController from "./controllers/UserController.js";
 
 mongoose
   .connect(
-    "mongodb+srv://redennessy:Nortenos67@cluster0.fvxmkix.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    "mongodb+srv://redennessy:Nortenos67@cluster0.fvxmkix.mongodb.net/blog?retryWrites=true&w=majority&appName=Cluster0"
   )
   .then(() => {
     console.log("db ok");
@@ -19,15 +23,11 @@ const app = express();
 
 app.use(express.json());
 
-app.post("/auth/register", registerValidation, (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json(errors.array());
-  }
-  res.json({
-    success: true,
-  });
-});
+app.post("/auth/login", loginValidation, UserController.login);
+
+app.post("/auth/register", registerValidation, UserController.register);
+
+app.get("/auth/me", checkAuth, UserController.getMe);
 
 app.listen(4444, (err) => {
   if (err) {
